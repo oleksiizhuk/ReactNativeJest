@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import Button from '../../components/Button/Button';
-import Input from '../../components/Input/Input';
+import Button from '../../components/molecules/Button/Button';
+import Input from '../../components/molecules/Input/Input';
 import Layout from '../../layout/Layout';
 import {useFormik} from 'formik';
 import {useNavigation} from '@react-navigation/native';

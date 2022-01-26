@@ -1,11 +1,9 @@
-import React, {FC, memo} from 'react';
-import {View, TextInput, StyleSheet} from 'react-native';
-import IInputProps from './interface/interface';
+import { StyleSheet } from 'react-native';
 import {useTheme} from '@react-navigation/native';
 
-const Input: FC<IInputProps> = ({onChange, value, placeholder}) => {
+export const InputStyleCreator = () => {
   const colors = useTheme() as any;
-  const styles = StyleSheet.create({
+  return StyleSheet.create({
     container: {
       width: '100%',
       flexDirection: 'row',
@@ -27,20 +25,5 @@ const Input: FC<IInputProps> = ({onChange, value, placeholder}) => {
       lineHeight: 20,
       textAlignVertical: 'center',
     },
-  });
-
-  return (
-    <View>
-      <View style={styles.container}>
-        <TextInput
-          style={styles.input}
-          onChangeText={onChange}
-          value={value}
-          placeholder={placeholder}
-        />
-      </View>
-    </View>
-  );
-};
-
-export default memo(Input);
+  })
+}
