@@ -1,112 +1,69 @@
-#!/bin/sh
-#####################################################
-# React Native Clean
-# Script to clean up metro, React Native and Watchman
-#####################################################
-clean() {
-
-    echo "\n"
-
-    echo "\n(╯°□°)╯ LET'S GO!"
-
-    echo "\nClean up node modules.."
-
-    rm -rf node_modules
-
-    echo "\n(╯°□°)╯ Clean yarn cache and install packages..\n"
-
-    yarn cache clean
-
-    yarn install
-
-    echo "\n(╯°□°)╯ Clear all temp directories..\n"
-
-    rm -rf $TMPDIR/react-native-packager-cache-*
-
-    rm -rf $TMPDIR/metro-*
-
-    rm -rf $TMPDIR/react-*
-
-    rm -rf $TMPDIR/haste-*
-
-    echo "\n(╯°□°)╯ Clear all watchman watches..\n"
-
-    watchman watch-del-all
-
-    echo "\n(╯°□°)╯ Clean up iOS folders..\n"
-
-    cd ios
-
-    rm -rf Pods
-
-    rm -rf Podfile.lock
-
-    rm -rf build
-
-    pod install
-
-    cd ..
-
-    echo "\n(╯°□°)╯ Clean up android folder..\n"
-
-    cd android
-
-    rm -rf build
-
-    echo "\n(╯°□°)╯ DON'T FORGET TO DELETE THE APP AND RESTART SIMULATOR after cache is reset\n";
-
-    # rm -rf ~/Library/Developer/Xcode/DerrivedData
-    # expo c -r
-
-    cd ..
-
-    echo "\nt(-.-t) ALL CLEANED.\n"
-
-    yarn start -- --reset-cache
+function npmInstall() {
+  echo "==========>   Start npm install   <==============="
+#  npm install --legacy-peer-deps
+  yarn install
 
 }
 
-echo "\n"
-echo "|__)_ _  _|_  |\ | _ |_.   _"
-echo "| \(-(_|(_|_  | \|(_||_|\/(-\n"
-echo "  :::::::: :::       ::::::::::    :::    ::::    :::"
-echo " :+:    :+::+:       :+:         :+: :+:  :+:+:   :+:"
-echo " +:+       +:+       +:+        +:+   +:+ :+:+:+  +:+"
-echo " +#+       +#+       +#++:++#  +#++:++#++:+#+ +:+ +#+"
-echo " +#+       +#+       +#+       +#+     +#++#+  +#+#+#"
-echo " #+#    #+##+#       #+#       #+#     #+##+#   #+#+#"
-echo " ######## #######################     ######    #### "
-echo "\n (づ ￣ ³￣)づ  \"Fixin' dem watchman woes\"\n"
+function clearNodeModule() {
+  echo "==========>   start watch dell all    <==============="
+  watchman watch-del-all
+  echo "==========>   start delete node modules, .lock files    <==============="
+  sudo rm -rf node_modules \
+  && sudo rm -rf package-lock.json \
+  && sudo rm -rf yarn.lock
+}
 
-if [ "$1" = '' ]; then
-    echo '(ಠ_ಠ) No path specified... Abort!\n'
-else
-    echo "*------------------------WARNING--------------------------*"
-    echo "| CHECK THAT YOU ARE RUNNING THIS AT THE ROOT OF THE REPO |"
-    echo "*------------------------WARNING--------------------------*"
+function ios() {
+   echo "==========>   Start IOS   <==============="
+   clearNodeModule
+   cd ios \
+   && sudo rm -rf ~/Library/Developer/Xcode/DerivedData \
+   && sudo rm -rf Pods \
+   && sudo rm -rf Podfile.lock \
+   && sudo rm -rf build \
+   && cd ..
+   echo "==========>   start install RN-modules and POD-modules   <==============="
+   npmInstall \
+   && cd ios \
+   && pod install \
+   && cd ..
+   yarn restart-dev
+#   npx react-native run-ios
+}
 
-    cd $1
+function android(){
+  echo "==========>   Start ANDROID   <==============="
+  clearNodeModule
+  cd android \
+  && sudo rm -rf app/build \
+  && sudo rm -rf .gradle \
+  && sudo rm -rf build \
+  && cd ..
+  npmInstall
+#  react-native run-android --variant=trugreatStagingDebug --appIdSuffix staging
+}
 
-    echo "\nCURRENT PATH: $(pwd)/\n"
+function runDefault() {
+  echo "==========>   Start Default   <==============="
+  echo "==========>   start watch dell all    <==============="
+  watchman watch-del-all
+  echo "start delete node modules and Pods modules <==============="
+  sudo rm -rf node_modules/ && rm -rf package-lock.json && rm -rf yarn.lock && npm install --legacy-peer-deps && cd ios/ && rm -rf ~/Library/Developer/Xcode/DerivedData && rm -rf Pods/ && rm -rf build/ && rm -rf Podfile.lock && pod install  && cd ..
+  echo "==========>   start project on ios   <==============="
+  yarn restart-dev
+  echo "==========>   END   <==============="
+}
 
-    ls -ahl $1 | tail |  cut -d :  -f 2 | cut -d ' ' -f 2
+while getopts ia flag; do
+  case "${flag}" in
+    (i) ios; exit;;
+    (a) android; exit;;
+    (*) echo "Flag is wrong";;
+  esac
+done
 
-    echo "\nYOU ARE ABOUT TO DO THE FOLLOWING:\n"
+if [[ $# == 0 ]]; then
+  runDefault
+  fi
 
-    echo "- Clean up node modules "
-    echo "- Clean yarn cache and install packages"
-    echo "- Clean all temp directories"
-    echo "- Clear all watchman watches"
-    echo "- Clean up iOS folders"
-    echo "- Clean up android folder\n"
-
-    read  -n 1 -p "Enter Y to continue or any other key to abort (ಠ_ಠ)..." input
-
-    if [ $input = 'Y' ]; then
-        clean
-    elif [ $input = 'y' ]; then
-        clean
-    else
-        echo '\n(ಠ_ಠ) Abort!\n'
-    fi
-fi
